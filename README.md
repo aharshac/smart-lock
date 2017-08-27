@@ -8,8 +8,7 @@ Demo control panel is hosted on [**Firebase**](https://smart-lock-hca.firebaseap
 &nbsp;
 
 ## MQTT Broker
-We're using [**CloudMQTT**](https://www.cloudmqtt.com/).    
-But feel free to choose your provider.   
+We're using [**CloudMQTT**](https://www.cloudmqtt.com/), but feel free to choose your provider.   
 Then update auth details in **`nodemcu_lock/nodemcu_lock.ino`** and **`web-panel/src/script.js`**
 
 &nbsp;
@@ -32,7 +31,8 @@ https://www.marginallyclever.com/2017/02/setup-nodemcu-drivers-arduino-ide/
 &nbsp;
 
 ## Web Control Panel
-For testing, files are statically served using the NPM **serve** package.    
+For testing, [**Node.js**](https://nodejs.org/) and [**NPM**](https://www.npmjs.com/files) are required.        
+Files are statically served using the [**serve**](https://www.npmjs.com/package/serve) package.    
 
 ### Installation
 ```
