@@ -1,11 +1,13 @@
 # Smart Lock
 [![Collaborizm](https://www.collaborizm.com/GitHubBadge.svg)](https://www.collaborizm.com/project/ByxePzrIW)
 
-Internet controlled lock example using NodeMCU and MQTT protocol.
+Internet controlled lock example using NodeMCU and MQTT protocol.     
+    
+Demo control panel is hosted on [**Firebase**](https://smart-lock-hca.firebaseapp.com/) at https://smart-lock-hca.firebaseapp.com
 
 &nbsp;
 
-## MQTT broker
+## MQTT Broker
 We're using [**CloudMQTT**](https://www.cloudmqtt.com/).    
 But feel free to choose your provider.   
 Then update auth details in **`nodemcu_lock/nodemcu_lock.ino`** and **`web-panel/src/script.js`**
