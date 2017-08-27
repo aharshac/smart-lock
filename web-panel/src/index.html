@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Smart Lock Project Control Panel</title>
+    <link rel="icon" sizes="32x32" type="image/png" href="/favicon.png">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/bootstrap.min.css">
+    <link rel="stylesheet" href="/bootstrap-switch.min.css">
+    <link rel="stylesheet" href="/style.css">
+
+    <script type="text/javascript" src="/jquery-2.2.4.min.js"></script>
+    <script type="text/javascript" src="/jquery.mobile.custom.min.js"></script>
+    <script type="text/javascript" src="/bootstrap-switch.min.js"></script>
+    <script type="text/javascript" src="/mqtt-2.12.0.min.js"></script>
+    <script type="text/javascript" src="/script.js"></script>
+  </head>
+
+  <body>
+    <div class="header">
+      <a href="https://www.collaborizm.com/project/ByxePzrIW" target="_blank"><img src="/collaborizm.png" alt="C"></a>
+      <h1>Smart Lock Control Panel</h1>
+      <a href="https://github.com/aharshac/smart-lock" target="_blank"><img src="/github.png" alt="G"></a>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-1 col-sm-offset-5 col-control">
+                <h3>Device</h3>
+            </div>
+            <div class="col-sm-2 col-control online" id="state">
+                <h3>Online</h3>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-sm-1 col-sm-offset-5 col-control">
+              <h3>Lock</h3>
+            </div>
+            <div class="col-sm-2 col-control">
+              <input type="checkbox" id="switch" name="key" checked="false">
+            </div>
+        </div>
+    </div>
+  </body>
+</html>
