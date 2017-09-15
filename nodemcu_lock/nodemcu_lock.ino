@@ -19,6 +19,7 @@
 
   Pin Connections:
   + NodeMCU V3
+    * A0 = LM35
     * D1 = Servo input
     * D6 = WiFi status LED
     * D7 = MQTT status LED
@@ -43,6 +44,12 @@
 #include <Servo.h>
 
 
+
+// WiFi Config Portal Settings
+const char wifi_config_ap_name[10] = "SmartLock";
+const char wifi_config_ap_password[9] = "12345678";
+IPAddress wifi_config_ap_ip = IPAddress(192, 168, 1, 1);
+
 //  MQTT Broker & Auth
 #error "Change auth"
 const char* mqtt_broker_url = "";
@@ -50,31 +57,35 @@ const int mqtt_broker_port = 0;
 const char* mqtt_broker_username = "";
 const char* mqtt_broker_password = "";
 
-//  MQTT Client
-WiFiClient espClient;
-PubSubClient mqttClient(espClient); //  MQTT Client
-
 //  Pub & Sub topics
-const char* topic_panel = "panel";  //  Sub - Remote
-const char* topic_lock = "lock";    //  Pub - Me
-const char* topic_lock_online = "lock_online";    //  Pub - Me  (Online state indicator)
+const char topic_panel[6] = "panel";  //  Sub - Remote
+const char topic_lock[5] = "lock";    //  Pub - Me
+const char topic_lock_temp[10] = "lock_temp";    //  Pub - Me  (Temperature)
+const char topic_lock_online[12] = "lock_online";    //  Pub - Me  (Online state indicator)
 
 //  Lock state
 bool stateLocked = true;
-const char* sLocked = "1"; 
-const char* sUnlocked = "0"; 
+const char sLocked[2] = "1"; 
+const char sUnlocked[2] = "0"; 
 
 //  Lock online  state
-const char* sOnline = "1"; 
-const char* sOffline = "0"; 
+const char sOnline[2] = "1"; 
+const char sOffline[2] = "0"; 
+
+
+// Interfaces
+//  Pin layout
+int pinLM35 = A0;
+int pinServoLock = D1;
+int pinLedWiFi = D6;
+int pinLedMqtt = D7;
 
 //  Hardware
 Servo servoLock;
 
-//  Pin layout
-int pinServoLock = D1;
-int pinLedWiFi = D6;
-int pinLedMqtt = D7;
+WiFiClient espClient; //  WiFi Client
+PubSubClient mqttClient(espClient); //  MQTT Client
+
 
 void setup() {
     Serial.begin(115200);
@@ -85,12 +96,15 @@ void setup() {
 
     digitalWrite(pinLedWiFi, LOW);
     digitalWrite(pinLedMqtt, LOW);
+
+    setLock(true);
     
     WiFiManager wifiManager;
     WiFiManagerParameter title("<h2>SmartLock Configuration Portal</h2>");
     wifiManager.addParameter(&title);
-    wifiManager.setConfigPortalTimeout(300);  // 300 sec = 5 min
-    if (!wifiManager.autoConnect("SmartLock", "12345678")) {
+    wifiManager.setConfigPortalTimeout(60);  // 60 sec
+    wifiManager.setAPStaticIPConfig(wifi_config_ap_ip, wifi_config_ap_ip, IPAddress(255,255,255,0));
+    if (!wifiManager.autoConnect(wifi_config_ap_name, wifi_config_ap_password)) {
         Serial.println(F("Failed to connect and hit timeout"));
         delay(3000);
         ESP.reset();  //reset and try again, or maybe put it to deep sleep
@@ -126,6 +140,7 @@ void loop() {
   if (!mqttClient.connected()) {
       connect();
   }
+  sendTemperature();
   mqttClient.loop();
 }
 
@@ -134,7 +149,7 @@ void connect() {
   
   // Loop until connected
   while (!mqttClient.connected()) {
-    Serial.print(F("Attempting MQTT connection..."));
+    Serial.println(F("Attempting MQTT connection..."));
     // Attempt to connect
     // connect (clientID, username, password, willTopic, willQoS, willRetain, willMessage)
     if (mqttClient.connect(String(ESP.getChipId()).c_str(), mqtt_broker_username, mqtt_broker_password, topic_lock_online, 1, true, sOffline)) {
@@ -168,6 +183,19 @@ void sendLockStateFeedback() {
     delay(100);
     mqttClient.publish(topic_lock, stateLocked ? sLocked : sUnlocked);
     blinkLedMqtt(true);
+}
+
+void sendTemperature() {
+    float temp = 3.5 * 100 * (analogRead(pinLM35)/1024.0); 
+    Serial.print(F("Temperature (C) = "));
+    Serial.println(temp);
+    delay(100);
+    
+    char buffer[10];
+    dtostrf(temp, 0, 0, buffer);
+    mqttClient.publish(topic_lock_temp, buffer);
+    blinkLedMqtt(true);
+    delay(1000);
 }
 
 void blinkLedMqtt(bool shortDelay) {

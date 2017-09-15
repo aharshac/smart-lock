@@ -1,17 +1,19 @@
 $( document ).ready(function () {
     //  UI
-    var key = $('#switch[name="key"]');
-    var indicator = $('#state');
+    var ui_lock_key = $('#switch[name="key"]');
+    var ui_online_indicator = $('#state');
+    var ui_temperature = $('#temperature');
     var isPressed = false;
 
     //  MQTT Broker & Auth
-    var mqtt_broker_url = "wss://<url>:<port>";
+    var mqtt_broker_url = "";
     var mqtt_broker_username = "";
     var mqtt_broker_password = "";
 
     //  Pub & Sub topics
     var topic_panel = "panel";  //  Pub - Me
     var topic_lock = "lock";    //  Sub - Lock
+    var topic_lock_temp = "lock_temp";    //  Sub - (Temperature)
     var topic_lock_online = "lock_online";    //  Sub - Lock  (Online state indicator)
 
     //  Lock state
@@ -26,9 +28,10 @@ $( document ).ready(function () {
     var feedback = false;
     
     setOnlineState(false);
-    key.bootstrapSwitch('disabled', true);
-    key.bootstrapSwitch('state', false);
-    key.bootstrapSwitch().on('switchChange.bootstrapSwitch', function(event, state) {
+    setTemperature(false);
+    ui_lock_key.bootstrapSwitch('disabled', true);
+    ui_lock_key.bootstrapSwitch('state', false);
+    ui_lock_key.bootstrapSwitch().on('switchChange.bootstrapSwitch', function(event, state) {
         if (feedback) {
             feedback = false;
         } else {  
@@ -47,6 +50,7 @@ $( document ).ready(function () {
     client.on('connect', function () {
         console.log("Connected to MQTT broker");
         client.subscribe(topic_lock);
+        client.subscribe(topic_lock_temp);
         client.subscribe(topic_lock_online);
         sendLockState(false);
     })
@@ -57,25 +61,38 @@ $( document ).ready(function () {
         if (topic == topic_lock) {
             setOnlineState(true);
             var status_lock = (message.toString() == sUnlocked ? false : true);
-            var status_switch = key.bootstrapSwitch('state');
+            var status_switch = ui_lock_key.bootstrapSwitch('state');
             
             if(status_lock != status_switch) { 
                 feedback = true;
-                key.bootstrapSwitch('state', status_lock); 
+                ui_lock_key.bootstrapSwitch('state', status_lock); 
             }
+        }
+        
+        if (topic == topic_lock_temp) {
+            var temp = message.toString();
+            setTemperature(temp);
         }
         
         if (topic == topic_lock_online) {
             var online = (message.toString() == sOnline ? true : false);
             setOnlineState(online);
+            setTemperature(temp);
         }
     })
 
     function setOnlineState(online) {
-        indicator.removeClass(online ? 'offline' : 'online');
-        indicator.addClass(online ? 'online' : 'offline');
-        indicator.html(online ? '<h3>Online</h3>' : '<h3>Offline</h3>');
-        key.bootstrapSwitch('disabled', !online);
+        ui_online_indicator.removeClass(online ? 'offline' : 'online');
+        ui_online_indicator.addClass(online ? 'online' : 'offline');
+        ui_online_indicator.text(online ? 'Online' : 'Offline');
+        ui_lock_key.bootstrapSwitch('disabled', !online);
+    }
+    
+    function setTemperature(temp) {
+        var isNumber = $.isNumeric(temp);
+        ui_temperature.removeClass(isNumber ? 'offline' : 'online');
+        ui_temperature.addClass(isNumber ? 'online' : 'offline');
+        ui_temperature.text(isNumber ? temp + " °C" : '-');
     }
 
     function sendLockState(locked) {

@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "serve -s src -p 3000"
+    "//": "serve -s src -p 3000",
+    "test": "node index.js"
   },
   "author": "Harsha Alva",
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "serve": "^6.0.6"
+    "live-server": "^1.2.0"
   }
 }
